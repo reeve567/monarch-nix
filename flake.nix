@@ -49,5 +49,8 @@
         # Install Monarch to /Applications/Nix\ Apps
         environment.systemPackages = [ self.packages.${system}.monarch ];
       };
+
+      # For use with home-manager
+      homeManagerModules.default = import ./home-manager-module.nix;
     };
 }
