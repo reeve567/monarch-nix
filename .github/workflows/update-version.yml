@@ -1,0 +1,101 @@
+name: Update Monarch Version
+
+on:
+  schedule:
+    # Run daily at 10 AM UTC
+    - cron: '0 10 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-version:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Check for new version
+        id: version-check
+        run: |
+          # Fetch latest version info
+          LATEST_JSON=$(curl -s https://storage.googleapis.com/monarchlauncher/v08/aarch64/latest.json)
+          LATEST_VERSION=$(echo "$LATEST_JSON" | jq -r '.version')
+
+          # Extract current version from flake.nix
+          CURRENT_VERSION=$(grep 'version = ' flake.nix | head -1 | sed 's/.*"\(.*\)".*/\1/')
+
+          echo "Latest version: $LATEST_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          if [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+            echo "New version available: $LATEST_VERSION"
+          else
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+            echo "Already up to date"
+          fi
+
+      - name: Download and hash new version
+        if: steps.version-check.outputs.update_needed == 'true'
+        id: hash
+        run: |
+          VERSION="${{ steps.version-check.outputs.latest_version }}"
+          DMG_URL="https://storage.googleapis.com/monarchlauncher/v08/aarch64/monarch-${VERSION}.dmg"
+
+          # Download and compute hash
+          HASH=$(nix-prefetch-url "$DMG_URL" 2>&1 | head -1)
+          SRI_HASH=$(nix hash convert --hash-algo sha256 --to sri "$HASH")
+
+          echo "hash=$SRI_HASH" >> $GITHUB_OUTPUT
+          echo "New hash: $SRI_HASH"
+
+      - name: Update flake.nix
+        if: steps.version-check.outputs.update_needed == 'true'
+        run: |
+          VERSION="${{ steps.version-check.outputs.latest_version }}"
+          HASH="${{ steps.hash.outputs.hash }}"
+
+          # Update version
+          sed -i.bak "s/version = \".*\";/version = \"$VERSION\";/" flake.nix
+
+          # Update hash
+          sed -i.bak "s|hash = \"sha256-.*\";|hash = \"$HASH\";|" flake.nix
+
+          # Remove backup file
+          rm flake.nix.bak
+
+          echo "Updated flake.nix to version $VERSION"
+
+      - name: Test build
+        if: steps.version-check.outputs.update_needed == 'true'
+        run: |
+          nix build --print-build-logs
+
+      - name: Create Pull Request
+        if: steps.version-check.outputs.update_needed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update Monarch to ${{ steps.version-check.outputs.latest_version }}"
+          title: "Update Monarch to ${{ steps.version-check.outputs.latest_version }}"
+          body: |
+            ## Automated Version Update
+
+            This PR updates Monarch from `${{ steps.version-check.outputs.current_version }}` to `${{ steps.version-check.outputs.latest_version }}`.
+
+            **Changes:**
+            - Version: `${{ steps.version-check.outputs.latest_version }}`
+            - Hash: `${{ steps.hash.outputs.hash }}`
+
+            The build has been tested and completed successfully.
+          branch: update-monarch-${{ steps.version-check.outputs.latest_version }}
+          delete-branch: true
+          labels: |
+            automated
+            dependencies
