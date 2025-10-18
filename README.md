@@ -71,6 +71,10 @@ home-manager.users.youruser = { ... }: {
 
   programs.monarch = {
     enable = true;
+
+    # Optional: Set your license key (keep private!)
+    licenseKey = "YOUR-LICENSE-KEY-HERE";
+
     settings = {
       # Your custom settings
       searchEngine = "kagi";
@@ -100,7 +104,20 @@ home-manager.users.youruser = { ... }: {
 };
 ```
 
-### 2. Available Settings
+### 2. License Key (Optional)
+
+You can optionally set your Monarch license key:
+
+```nix
+programs.monarch = {
+  enable = true;
+  licenseKey = "YOUR-LICENSE-KEY-HERE";
+};
+```
+
+**Important:** Keep your license key private! Don't commit it to public repositories.
+
+### 3. Available Settings
 
 Common settings you might want to configure:
 

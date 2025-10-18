@@ -107,6 +107,78 @@ let
     faviconFetching = true;
     clipboardLinkPreviews = true;
     ephemeralNoteActive = true;
+    lightTheme = {
+      id = "0";
+      name = "Default";
+      prompt = "Search apps and commands";
+      appearance = "light";
+      frame = "monarch";
+      filename = "default";
+      auxClasses = [ "light-mode" ];
+      rightSideInfo = "item_type";
+      colorTheme = "#A6A6A6";
+      outerBorder = "#8585858a";
+      background1 = "#c8c8c814";
+      background2 = "#c8c8c814";
+      caretColor = "#1555bd";
+      edges = "#777";
+      topLine = "#777";
+      iconColor = "#777";
+      controlBarTopEdge = "#a0a0a080";
+      controlBar = "#a0a0a080";
+      placeholderText = "#8e8e8ed0";
+      variables = "#2196f3";
+      text1 = "#242424";
+      text2 = "#444";
+      text3 = "#2196f3";
+      text4 = "#858585cc";
+      text5 = "#ddd";
+      text6 = "#A8A7AC";
+      linkPreviewText = "#ccc";
+      linkPreviewTextHover = "#fff";
+      codeText = "";
+      codeBg = "";
+      selection = "#619be2";
+      itemHover = "#8585858a";
+      highlightedItem = "#8585858a";
+      transparency = 1;
+    };
+    darkTheme = {
+      id = "1";
+      name = "Default";
+      prompt = "Search apps and commands";
+      appearance = "dark";
+      frame = "monarch";
+      filename = "default";
+      auxClasses = [];
+      rightSideInfo = "item_type";
+      colorTheme = "#1555bd";
+      outerBorder = "#8585858a";
+      background1 = "#00000013";
+      background2 = "#00000013";
+      caretColor = "#f5f5f5";
+      edges = "#8585858a";
+      topLine = "#8585858a";
+      iconColor = "#8585858a";
+      controlBarTopEdge = "#8585858a";
+      controlBar = "#282a2b80";
+      placeholderText = "#8e8e8ed0";
+      variables = "#2196f3";
+      text1 = "#f5f5f5";
+      text2 = "#bbb";
+      text3 = "#2196f3";
+      text4 = "#858585cc";
+      text5 = "#ddd";
+      text6 = "#A8A7AC";
+      linkPreviewText = "#ccc";
+      linkPreviewTextHover = "#fff";
+      codeText = "";
+      codeBg = "";
+      selection = "#619be2";
+      itemHover = "#8585858a";
+      highlightedItem = "#8585858a";
+      transparency = 1;
+    };
     currentTheme = "1";
   };
 
@@ -114,6 +186,16 @@ in
 {
   options.programs.monarch = {
     enable = mkEnableOption "Monarch launcher";
+
+    licenseKey = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX";
+      description = ''
+        Your Monarch license key. This will be written to
+        ~/Library/Application Support/com.monarch.macos/.licensekey
+      '';
+    };
 
     settings = mkOption {
       type = settingsFormat.type;
@@ -140,6 +222,10 @@ in
     home.file."Library/Application Support/com.monarch.macos/settings.json" = {
       source = settingsFormat.generate "monarch-settings.json"
         (lib.recursiveUpdate defaultSettings cfg.settings);
+    };
+
+    home.file."Library/Application Support/com.monarch.macos/.licensekey" = mkIf (cfg.licenseKey != null) {
+      text = cfg.licenseKey;
     };
   };
 }
