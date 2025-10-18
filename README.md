@@ -88,6 +88,13 @@ home-manager.users.youruser = { ... }: {
         { mode = "audio_devices"; enabled = false; }
         { mode = "monarch_ai"; enabled = false; }
       ];
+
+      # Partially override nested settings (recursive merge)
+      ai = {
+        provider = "openai";
+        defaultModel = "gpt-4";
+        # Other ai settings will use defaults
+      };
     };
   };
 };
@@ -109,6 +116,8 @@ Common settings you might want to configure:
 - `colorFormat` - Color format for color picker ("hex", "rgb", etc.)
 
 The settings will be written to `~/Library/Application Support/com.monarch.macos/settings.json`.
+
+**Note:** Settings are managed declaratively via Nix. Changes made through Monarch's UI may not persist, as the configuration file is linked to the read-only Nix store. To modify settings, update your Nix configuration and rebuild.
 
 ## Updating
 

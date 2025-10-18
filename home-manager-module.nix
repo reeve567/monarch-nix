@@ -139,7 +139,7 @@ in
   config = mkIf cfg.enable {
     home.file."Library/Application Support/com.monarch.macos/settings.json" = {
       source = settingsFormat.generate "monarch-settings.json"
-        (defaultSettings // cfg.settings);
+        (lib.recursiveUpdate defaultSettings cfg.settings);
     };
   };
 }
