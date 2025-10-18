@@ -55,6 +55,70 @@ Option B - Add directly to packages:
 darwin-rebuild switch --flake ~/.config/nix-darwin#personal
 ```
 
+## Configuration Management (Optional)
+
+You can manage Monarch's settings declaratively using the home-manager module:
+
+### 1. Import the home-manager module
+
+In your home-manager configuration:
+
+```nix
+home-manager.users.youruser = { ... }: {
+  imports = [
+    monarch-nix.homeManagerModules.default
+  ];
+
+  programs.monarch = {
+    enable = true;
+    settings = {
+      # Your custom settings
+      searchEngine = "kagi";
+      darkMode = true;
+      clipboardHistoryEnabled = true;
+      cbHistoryLength = 200;
+      autorun = true;
+      menuBarIcon = true;
+
+      # Enable specific modes
+      modeSelectOrder = [
+        { mode = "clipboard_history"; enabled = true; }
+        { mode = "note_capture"; enabled = true; }
+        { mode = "color_picker"; enabled = true; }
+        { mode = "audio_devices"; enabled = false; }
+        { mode = "monarch_ai"; enabled = false; }
+      ];
+
+      # Partially override nested settings (recursive merge)
+      ai = {
+        provider = "openai";
+        defaultModel = "gpt-4";
+        # Other ai settings will use defaults
+      };
+    };
+  };
+};
+```
+
+### 2. Available Settings
+
+Common settings you might want to configure:
+
+- `searchEngine` - Default search engine (e.g., "google", "kagi", "duckduckgo")
+- `darkMode` - Enable dark mode
+- `clipboardHistoryEnabled` - Enable clipboard history
+- `cbHistoryLength` - Number of clipboard items to keep (default: 100)
+- `autorun` - Launch Monarch at login
+- `menuBarIcon` - Show menu bar icon
+- `autoPaste` - Automatically paste after selection
+- `soundEnabled` - Enable sound effects
+- `vault` - Default vault location for notes
+- `colorFormat` - Color format for color picker ("hex", "rgb", etc.)
+
+The settings will be written to `~/Library/Application Support/com.monarch.macos/settings.json`.
+
+**Note:** Settings are managed declaratively via Nix. Changes made through Monarch's UI may not persist, as the configuration file is linked to the read-only Nix store. To modify settings, update your Nix configuration and rebuild.
+
 ## Updating
 
 To update to the latest version:
@@ -63,6 +127,8 @@ To update to the latest version:
 nix flake update monarch-nix
 darwin-rebuild switch --flake ~/.config/nix-darwin#personal
 ```
+
+Automatic updates are handled via GitHub Actions that check for new versions daily.
 
 ## Development
 
