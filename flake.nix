@@ -23,12 +23,19 @@
 
         nativeBuildInputs = [ pkgs.undmg ];
 
+        # Include the Apple SDK to ensure all frameworks are available
+        # This provides CoreFoundation, CoreServices, Foundation, AppKit, and other system frameworks
+        buildInputs = [ pkgs.apple-sdk ];
+
         sourceRoot = ".";
 
         installPhase = ''
           mkdir -p $out/Applications
           cp -r Monarch.app $out/Applications/
         '';
+
+        # Don't strip the app bundle to preserve framework links
+        dontStrip = true;
 
         meta = with pkgs.lib; {
           description = "Monarch launcher - a macOS app launcher";
