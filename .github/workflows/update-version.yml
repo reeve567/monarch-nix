@@ -51,9 +51,9 @@ jobs:
           VERSION="${{ steps.version-check.outputs.latest_version }}"
           DMG_URL="https://storage.googleapis.com/monarchlauncher/v08/aarch64/monarch-${VERSION}.dmg"
 
-          # Download and compute hash
-          HASH=$(nix-prefetch-url "$DMG_URL" 2>&1 | head -1)
-          SRI_HASH=$(nix hash convert --hash-algo sha256 --to sri "$HASH")
+          # Download and compute hash using nix-prefetch-url
+          HASH=$(nix-prefetch-url "$DMG_URL")
+          SRI_HASH=$(nix hash convert --hash-algo sha256 --to-sri "$HASH")
 
           echo "hash=$SRI_HASH" >> $GITHUB_OUTPUT
           echo "New hash: $SRI_HASH"
