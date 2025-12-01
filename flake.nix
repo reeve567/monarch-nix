@@ -10,7 +10,7 @@
       system = "aarch64-darwin";
       pkgs = import nixpkgs { inherit system; };
 
-      version = "0.8.23";
+      version = "0.8.32";
 
       monarch = pkgs.stdenv.mkDerivation {
         pname = "monarch";
@@ -18,7 +18,7 @@
 
         src = pkgs.fetchurl {
           url = "https://storage.googleapis.com/monarchlauncher/v08/aarch64/monarch-${version}.dmg";
-          hash = "sha256-pQEy1WuhHdPLx9zjV8DY92A8B/LlXFxVhRMpPxbC+5M=";
+          hash = "sha256-VrwhPw/GV0hrdNGqyXiO121ZAIJe09Yvw4Dero0cs1w=";
         };
 
         nativeBuildInputs = [ pkgs.undmg ];
